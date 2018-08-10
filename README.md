@@ -8,7 +8,9 @@ When **[main.py](main.py)** is running, you will be able to input your expressio
 ![alt text](https://sv1.uphinhnhanh.com/images/2018/08/10/ScreenShot2018-08-10at10.11.52.png)
 
 You can use **dot** tool from the [graphviz](http://www.graphviz.org/) package to render it into a ***.png*** image:
-
+```
+dot tree.dot -T png -o tree.png
+```
 <p align="center">
   <img src="https://s2.upanh.pro/2018/08/09/tree.png">
 </p>
