@@ -38,6 +38,7 @@ Please feels free to contribute to this project, there are a lot of room for imp
 * Better Regex for slicing expression
 * Evaluate expression using expression tree and DFS
 * Making UI (currently running on console)
+* Add more operator (currently support + - * / ^ and sqrt)
 
 ## Authors
 
