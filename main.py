@@ -2,6 +2,9 @@ import re
 from math import sqrt
 from anytree import Node, RenderTree, DoubleStyle
 from anytree.exporter import DotExporter
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def notGreater(i, j):
@@ -19,18 +22,28 @@ def preprocessExpression(string):
     """Convert a expression string to a list of operand and operator"""
     string = string.replace(' ', '')
     string = string.replace(')-', ') - ')
+    string = string.replace('\)\(', ')*(')
     string = string.replace('*-', ' * -')
     string = string.replace('/-', ' / -')
     string = string.replace('+-', ' + -')
     string = string.replace('--', ' + ')
-    i = 1
+    string = string.replace(')sqrt', ')*sqrt')
     if len(string) != 1:
+        i = 1
         while True:
-            while string[i] == '-' and string[i - 1].isdigit() and string[i + 1].isdigit():
+            while string[i] == '-' and (string[i - 1].isdigit() or string[i - 1]=='x') and (string[i + 1].isdigit() or string[i + 1]=='x'):
                 string = string[:i] + ' ' + string[i] + ' ' + string[i + 1:]
             i += 1
             if i == len(string):
                 break
+        i = 0
+        while True:
+            while ((string[i].isdigit() or string[i]=='x') and string[i + 1] == '(') or (string[i] == ')' and (string[i + 1].isdigit() or string[i+1] == 'x')) or (string[i].isalpha() and string[i+1].isdigit()) or (string[i].isdigit() and string[i+1].isalpha()):
+                string = string[:i+1] + '*' + string[i+1:]
+            i += 1
+            if i == len(string)-1:
+                break
+    print(string)
     exp = re.findall(r'(-*[0-9,\.]+)|([*+^\/-]+|[A-Za-z]+)|(\(|\))', string)
     exp = [tuple(j for j in i if j)[-1] for i in exp]
     for i, x in enumerate(exp):
@@ -38,7 +51,8 @@ def preprocessExpression(string):
             exp[i] = float(x)
         except ValueError:
             pass
-    return exp
+    haveVarible = True if 'x' in exp else False
+    return exp, haveVarible
 
 
 def infixToPostfix(exp):
@@ -46,7 +60,7 @@ def infixToPostfix(exp):
     output = []
     stack = []
     for i in exp:
-        if type(i) is float:
+        if type(i) is float or i == 'x':
             output.append(i)
         elif i == '(':
             stack.append('(')
@@ -64,16 +78,17 @@ def infixToPostfix(exp):
             stack.append(i)
     while stack:
         output.append(stack.pop())
-
     return output
 
 
-def evaluatePostfix(postfix):
+def evaluatePostfix(postfix, x):
     """Evaluate a postfix expression"""
     stack = []
     for i in postfix:
         if type(i) is float:
             stack.append(i)
+        elif i == 'x':
+            stack.append(x)
         else:
             if i == 'sqrt':
                 val = stack.pop()
@@ -113,7 +128,7 @@ def drawExpressionTree(postfix):
     stack = []
     index = 0
     for i in postfix:
-        if type(i) is float:
+        if type(i) is float or i == 'x':
             stack.append(Node(index, parent=None, val=i))
             index += 1
         else:
@@ -141,18 +156,69 @@ def drawExpressionTree(postfix):
     DotExporter(root, graph="graph", nodeattrfunc=nodeattrfunc,
                 edgetypefunc=edgetypefunc).to_dotfile("tree.dot")
     # Graphviz: http://www.webgraphviz.com/
+    print("\nExpression Tree:")
     print(RenderTree(root, style=DoubleStyle).by_attr(attrname='val'))
 
 
-try:
-    expression = input("Input your expression: ")
-    postfix = infixToPostfix(preprocessExpression(expression))
-    print("Postfix expression: ", end='')
-    for each in postfix:
-        print(str(each), ' ', end='')
-    drawExpressionTree(postfix)
-    print('\nValue:', evaluatePostfix(postfix))
-except ValueError:
-    print("Math Error!")
-except IndexError:
-    print("Expression Not Valid")
+def plotFunction(postfix):
+    x1 = float(input("\nInput x1: "))
+    x2 = float(input("Input x2: "))
+    m = int(input("Input m: "))
+    step = (x2-x1)/m
+    x = []
+    y = []
+    list = []
+    for i in np.arange(x1, x2, step):
+        x.append(i)
+        try:
+            y.append(evaluatePostfix(postfix, i))
+        except ValueError:
+            x.pop()
+            list.append(pd.DataFrame({'x': x, 'y': y}))
+            x.clear()
+            y.clear()
+    list.append(pd.DataFrame({'x': x, 'y': y}))
+    fig = plt.figure(num='Ham so')
+    ax = fig.add_subplot(111)
+    print(list)
+    for each in list:
+        plt.plot('x', 'y', color='green', data=each, linestyle='-', marker='o')
+    plt.plot(x, y, 'go-')
+    ax.spines['left'].set_position('zero')
+    ax.spines['right'].set_color('none')
+    ax.spines['bottom'].set_position('zero')
+    ax.spines['top'].set_color('none')
+    ax.spines['left'].set_smart_bounds(True)
+    ax.spines['bottom'].set_smart_bounds(True)
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    plt.scatter(0, 0)
+    plt.grid(True)
+    plt.savefig("function.png")
+    #plt.show()
+
+
+def main():
+    try:
+        expression = input("Input your expression: ")
+        expression, haveVarible = preprocessExpression(expression)
+        postfix = infixToPostfix(expression)
+        print(postfix)
+        print("Postfix expression: ", end='')
+        for each in postfix:
+            print(str(each), ' ', end='')
+        drawExpressionTree(postfix)
+        if haveVarible:
+            #x = float(input("Input x: "))
+            #print('\nValue:', evaluatePostfix(postfix, x))
+            plotFunction(postfix)
+        else:
+            print('\nValue:', evaluatePostfix(postfix, 0))
+    except ValueError:
+        print("Math Error!")
+    except IndexError:
+        print("Expression Not Valid")
+
+
+if __name__ == '__main__':
+    main()
