@@ -7,22 +7,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def notGreater(i, j):
-    """Determine which operator will have higher priority."""
-    precedence = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3, 'sqrt': 4}
-    try:
-        a = precedence[i]
-        b = precedence[j]
-        return True if a <= b else False
-    except KeyError:
-        return False
-
-
 def preprocessExpression(string):
     """Convert a expression string to a list of operand and operator"""
     string = string.replace(' ', '')
     string = string.replace(')-', ') - ')
-    string = string.replace('\)\(', ')*(')
+    string = string.replace(')(', ')*(')
     string = string.replace('*-', ' * -')
     string = string.replace('/-', ' / -')
     string = string.replace('+-', ' + -')
@@ -43,7 +32,6 @@ def preprocessExpression(string):
             i += 1
             if i == len(string)-1:
                 break
-    print(string)
     exp = re.findall(r'(-*[0-9,\.]+)|([*+^\/-]+|[A-Za-z]+)|(\(|\))', string)
     exp = [tuple(j for j in i if j)[-1] for i in exp]
     for i, x in enumerate(exp):
@@ -53,6 +41,17 @@ def preprocessExpression(string):
             pass
     haveVarible = True if 'x' in exp else False
     return exp, haveVarible
+
+
+def notGreater(i, j):
+    """Determine which operator will have higher priority."""
+    precedence = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3, 'sqrt': 4}
+    try:
+        a = precedence[i]
+        b = precedence[j]
+        return True if a <= b else False
+    except KeyError:
+        return False
 
 
 def infixToPostfix(exp):
@@ -109,7 +108,6 @@ def evaluatePostfix(postfix, x):
                     stack.append(val2 / val1)
                 elif i == '^':
                     stack.append(val2**val1)
-
     return stack.pop()
 
 
@@ -161,28 +159,21 @@ def drawExpressionTree(postfix):
 
 
 def plotFunction(postfix):
-    x1 = float(input("\nInput x1: "))
-    x2 = float(input("Input x2: "))
-    m = int(input("Input m: "))
+    """Plot a function by connect a collection of points specify by user input"""
+    x1 = float(input("\nInput x start: "))
+    x2 = float(input("Input x end: "))
+    m = int(input("Input number of points: "))
     step = (x2-x1)/m
     x = []
     y = []
-    list = []
     for i in np.arange(x1, x2, step):
         x.append(i)
-        try:
-            y.append(evaluatePostfix(postfix, i))
-        except ValueError:
-            x.pop()
-            list.append(pd.DataFrame({'x': x, 'y': y}))
-            x.clear()
-            y.clear()
-    list.append(pd.DataFrame({'x': x, 'y': y}))
+        y.append(evaluatePostfix(postfix, i))
+    df = pd.DataFrame({'x': x, 'y': y})
+    print(df)
     fig = plt.figure(num='Ham so')
     ax = fig.add_subplot(111)
-    print(list)
-    for each in list:
-        plt.plot('x', 'y', color='green', data=each, linestyle='-', marker='o')
+    plt.plot('x', 'y', color='green', data=df, linestyle='-', marker='o')
     plt.plot(x, y, 'go-')
     ax.spines['left'].set_position('zero')
     ax.spines['right'].set_color('none')
@@ -195,7 +186,7 @@ def plotFunction(postfix):
     plt.scatter(0, 0)
     plt.grid(True)
     plt.savefig("function.png")
-    #plt.show()
+    # plt.show()
 
 
 def main():
@@ -209,11 +200,11 @@ def main():
             print(str(each), ' ', end='')
         drawExpressionTree(postfix)
         if haveVarible:
-            #x = float(input("Input x: "))
-            #print('\nValue:', evaluatePostfix(postfix, x))
+            x = float(input("Input value of x: "))
+            print('\nValue of expression:', evaluatePostfix(postfix, x))
             plotFunction(postfix)
         else:
-            print('\nValue:', evaluatePostfix(postfix, 0))
+            print('\nValue of expression:', evaluatePostfix(postfix, 0))
     except ValueError:
         print("Math Error!")
     except IndexError:
