@@ -169,11 +169,11 @@ def plotFunction(postfix):
     for i in np.arange(x1, x2, step):
         x.append(i)
         y.append(evaluatePostfix(postfix, i))
-    df = pd.DataFrame({'x': x, 'y': y})
+    df = pd.DataFrame({'x_axis': x, 'y_axis': y})
     print(df)
     fig = plt.figure(num='Ham so')
     ax = fig.add_subplot(111)
-    plt.plot('x', 'y', color='green', data=df, linestyle='-', marker='o')
+    plt.plot('x_axis', 'y_axis', color='green', data=df, linestyle='-', marker='o')
     plt.plot(x, y, 'go-')
     ax.spines['left'].set_position('zero')
     ax.spines['right'].set_color('none')
