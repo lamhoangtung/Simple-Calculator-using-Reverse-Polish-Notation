@@ -25,7 +25,7 @@ You can also copy all content inside the [**tree.dot**](tree.dot) file and use [
   <img src="https://media.giphy.com/media/2fsdaNR299EuyYtVJ7/giphy.gif">
 </p>
 
-If the expression is an one variable function, this program can plot it to a [**.png file**](function.png). The program will ask you the range of the graph and how many point (how acurrate) you want the graph to be. **Keep in mind, you shoudn't plot with too little points since it may lead to wrong graph:**
+If the expression is an one variable function, this program can plot it to a [**.png file**](function.png). It will ask you the range of the graph and how many point (how acurrate) you want the graph to be. **Keep in mind, you shoudn't plot with too little points since it may lead to wrong graph:**
 
 <p align="center">
   <img src="https://i.imgur.com/ByTU4tv.png">
@@ -52,6 +52,7 @@ Please feels free to contribute to this project, there are a lot of room for imp
 * Making UI (currently running on console)
 * Add support for more variable (currently support only one variable)
 * Add more operator (currently support + - * / ^ and sqrt)
+* Better method for plotting function
 
 ## Authors
 
