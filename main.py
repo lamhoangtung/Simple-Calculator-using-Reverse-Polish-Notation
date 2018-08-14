@@ -9,29 +9,21 @@ import matplotlib.pyplot as plt
 
 def preprocessExpression(string):
     """Convert a expression string to a list of operand and operator"""
-    string = string.replace(' ', '')
-    string = string.replace(')-', ') - ')
-    string = string.replace(')(', ')*(')
-    string = string.replace('*-', ' * -')
-    string = string.replace('/-', ' / -')
-    string = string.replace('+-', ' + -')
-    string = string.replace('--', ' + ')
-    string = string.replace(')sqrt', ')*sqrt')
-    if len(string) != 1:
-        i = 1
-        while True:
-            while string[i] == '-' and (string[i - 1].isdigit() or string[i - 1]=='x') and (string[i + 1].isdigit() or string[i + 1]=='x'):
-                string = string[:i] + ' ' + string[i] + ' ' + string[i + 1:]
-            i += 1
-            if i == len(string):
-                break
-        i = 0
-        while True:
-            while ((string[i].isdigit() or string[i]=='x') and string[i + 1] == '(') or (string[i] == ')' and (string[i + 1].isdigit() or string[i+1] == 'x')) or (string[i].isalpha() and string[i+1].isdigit()) or (string[i].isdigit() and string[i+1].isalpha()):
-                string = string[:i+1] + '*' + string[i+1:]
-            i += 1
-            if i == len(string)-1:
-                break
+    # Remove space
+    string = string.replace(" ","")
+    # Add missing '*' operator
+    string = re.sub(r'(\)|x)(\(|[0-9]|s|x)', r'\1*\2', string)
+    string = re.sub(r'([0-9])(\(|x|s)', r'\1*\2', string)
+    string = re.sub(r'(x)(x)', r'\1*\2', string)
+    # Handle multiple '+' and '-' operator
+    string = re.sub(r'(\-{2})+', '+', string)
+    string = re.sub(r'\++', '+', string)
+    string = re.sub(r'(\+\-)+', '-', string)
+    string = re.sub(r'(\-\+)+','-', string)
+    # Separate minus operator and minus number
+    string = re.sub(r'(\)|[0-9]|x)(\-)', r'\1\2 ',string)
+    string = re.sub(r'([\*\/])(\-)', r'\1 \2',string)
+    # Convert to a list with operand and operator by order
     exp = re.findall(r'(-*[0-9,\.]+)|([*+^\/-]+|[A-Za-z]+)|(\(|\))', string)
     exp = [tuple(j for j in i if j)[-1] for i in exp]
     for i, x in enumerate(exp):
@@ -186,6 +178,7 @@ def plotFunction(postfix):
     plt.scatter(0, 0)
     plt.grid(True)
     plt.savefig("function.png")
+    print("Function ploted, see the result at 'function.png' file.")
     # plt.show()
 
 
