@@ -47,7 +47,7 @@ You can see the details documentation about how I make this calculator in the [n
 
 ## Contributing
 
-Please feels free to contribute to this project, there are a lot of room for improvement, my suggesion are:
+Please feels free to contribute to this project, there are a lot of room for improvement, my suggestion are:
 * Evaluate expression using expression tree and DFS
 * Making UI (currently running on console)
 * Add support for more variable (currently support only one variable)
